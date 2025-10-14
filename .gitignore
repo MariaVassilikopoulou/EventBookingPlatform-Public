@@ -1,0 +1,51 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build Folders
+bin/
+obj/
+Debug/
+Release/
+
+# Rider
+.idea/
+
+# ASP.NET / .NET
+*.dbmdl
+*.pdb
+*.mdb
+*.log
+*.vsix
+*.nupkg
+*.snk
+*.publishsettings
+
+# Azure
+*.azurePubxml
+*.publishsettings
+*.azureWebJobs* 
+secrets.json
+
+# Node / React
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc
+*.swp
+*.tmp
+*.bak
+*.old
+*.orig
+
+# Mac OS
+.DS_Store
