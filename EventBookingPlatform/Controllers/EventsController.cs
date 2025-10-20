@@ -46,6 +46,28 @@ namespace EventBookingPlatform.Controllers
             return Created($"/api/events/{created.Id}", created);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var success = await _repository.DeleteAsync(id,id);
+            if (!success) return NotFound();
+            return NoContent();
+
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateEventDto dto)
+        {
+            var existing = await _repository.GetByIdAsync(id, id);
+            if (existing == null) return NotFound();
+
+            _mapper.Map(dto, existing);
+
+            var updated = await _repository.UpdateAsync(existing, existing.PartitionKey);
+            return Ok(updated);
+        }
+
+
 
     }
 }
