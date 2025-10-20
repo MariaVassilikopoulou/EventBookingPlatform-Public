@@ -12,5 +12,6 @@ namespace EventBookingPlatform.Interfaces
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? partitionKey = null);
 
         Task<T> UpsertAsync(T entity);
+     
     }
 }
