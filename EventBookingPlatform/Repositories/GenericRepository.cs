@@ -107,15 +107,21 @@ namespace EventBookingPlatform.Repositories
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? partitionKey = null)
         {
-            var queryable = _container
-                        .GetItemLinqQueryable<T>(allowSynchronousQueryExecution: false)
-                        .Where(predicate);
+            QueryRequestOptions? options = null;
 
             if (!string.IsNullOrEmpty(partitionKey))
             {
-                queryable = queryable.Where(item => item.PartitionKey == partitionKey);
-
+                options = new QueryRequestOptions
+                {
+                    PartitionKey = new PartitionKey(partitionKey)
+                };
             }
+
+            var queryable = _container.GetItemLinqQueryable<T>(
+                allowSynchronousQueryExecution: false,
+                requestOptions: options
+            )
+            .Where(predicate);
 
             using var feedIterator = queryable.ToFeedIterator();
             var results = new List<T>();
@@ -127,6 +133,7 @@ namespace EventBookingPlatform.Repositories
             }
 
             return results;
+
         }
 
 
