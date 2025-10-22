@@ -2,12 +2,15 @@
 using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace EventBookingPlatform.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class BookingController : ControllerBase
     {
         private readonly IGenericRepository<Booking> _bookingRepository;
@@ -29,8 +32,16 @@ namespace EventBookingPlatform.Controllers
                 if (bookingDto == null)
                     return BadRequest("Invalid booking data.");
 
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var userName = User.FindFirst("fullName")?.Value ?? "Unknown";
+            //var userName = User.Identity?.Name ?? "Unknown";
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User not authenticated.");
 
-                var ev = await _eventRepository.GetByIdAsync(bookingDto.EventId, bookingDto.EventId);
+            var ev = await _eventRepository.GetByIdAsync(bookingDto.EventId, bookingDto.EventId);
+            
+
                 if (ev == null)
                     return NotFound($"Event with ID {bookingDto.EventId} not found.");
 
@@ -38,10 +49,14 @@ namespace EventBookingPlatform.Controllers
                     return BadRequest("Number of seats should be greater than zero");
                 if (bookingDto.Seats > ev.AvailableSeats)
                     return BadRequest($"Only {ev.AvailableSeats} seats left for this event");
+
                 ev.AvailableSeats -= bookingDto.Seats;
                 await _eventRepository.UpdateAsync(ev, ev.PartitionKey);
 
                 var booking = _mapper.Map<Booking>(bookingDto);
+                booking.UserId = userId!;
+                booking.UserEmail = userEmail!;
+                booking.UserName = userName ;
                 var created = await _bookingRepository.AddAsync(booking);
 
                 return CreatedAtAction(nameof(GetById), new { eventId= created.PartitionKey, id = created.Id }, created);
@@ -86,6 +101,18 @@ namespace EventBookingPlatform.Controllers
             return Ok(bookings);
         }
 
+        [HttpGet("my-bookings")]
+        public async Task<IActionResult> GetMyBookings()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var bookings = await _bookingRepository.FindAsync(b => b.UserId == userId, null);
+            return Ok(bookings);
+        }
+
+
     }
-    }
+}
 

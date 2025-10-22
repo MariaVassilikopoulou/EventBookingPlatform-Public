@@ -4,13 +4,14 @@ using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
 using EventBookingPlatform.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventBookingPlatform.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
+    [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly IGenericRepository<Event> _repository;

@@ -13,7 +13,7 @@ namespace EventBookingPlatform.MappingProfiles
                 .ForMember(dest => dest.AvailableSeats, opt => opt.MapFrom(src => src.TotalSeats));
 
             CreateMap<UpdateEventDto, Event>()
-                .ForMember(dest=>dest.AvailableSeats, opt=>opt.MapFrom(src=> src.TotalSeats));
+                .ForMember(dest => dest.AvailableSeats, opt => opt.Ignore());
 
 
             CreateMap<CreateBookingDto, Booking>()
