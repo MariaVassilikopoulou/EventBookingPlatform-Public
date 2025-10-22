@@ -7,6 +7,7 @@ namespace EventBookingPlatform.Domain.Models
     {
         [JsonProperty("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string UserId { get; set; }
         public string UserName { get; set; }
         public string UserEmail { get; set; }
         public string EventId { get; set; }
