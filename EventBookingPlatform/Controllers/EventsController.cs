@@ -11,7 +11,7 @@ namespace EventBookingPlatform.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    
     public class EventsController : ControllerBase
     {
         private readonly IGenericRepository<Event> _repository;
