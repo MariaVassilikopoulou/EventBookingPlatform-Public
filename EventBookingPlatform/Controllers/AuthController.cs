@@ -104,7 +104,8 @@ namespace EventBookingPlatform.Controllers
                 Email = user.Email!,
                 Token = token,
                 RefreshToken = refreshToken,
-                IsAdmin = user.IsAdmin
+                IsAdmin = user.IsAdmin,
+                FullName = user.FullName
             });
         }
 

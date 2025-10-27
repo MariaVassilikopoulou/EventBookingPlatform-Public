@@ -2,6 +2,7 @@
 using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
+using EventBookingPlatform.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,17 +14,13 @@ namespace EventBookingPlatform.Controllers
     [Authorize]
     public class BookingController : ControllerBase
     {
-        private readonly IGenericRepository<Booking> _bookingRepository;
-            private readonly IGenericRepository<Event> _eventRepository;
-            private IMapper _mapper;
+        private readonly IBookingService _bookingService;
 
-            public BookingController(IGenericRepository<Booking> bookingRepository,
-                                     IGenericRepository<Event> eventRepository,
-                                     IMapper mapper)
+
+            public BookingController(IBookingService bookingService)
             {
-                _bookingRepository = bookingRepository;
-                _eventRepository = eventRepository;
-                _mapper = mapper;
+                _bookingService = bookingService;
+               
             }
 
             [HttpPost]
@@ -39,33 +36,16 @@ namespace EventBookingPlatform.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
 
-            var ev = await _eventRepository.GetByIdAsync(bookingDto.EventId, bookingDto.EventId);
-            
+            var (success, message, booking) = await _bookingService.CreateBookingAsync(userId, userEmail!, userName, bookingDto);
+            if (!success) return BadRequest(message);
 
-                if (ev == null)
-                    return NotFound($"Event with ID {bookingDto.EventId} not found.");
-
-                if (bookingDto.Seats <= 0)
-                    return BadRequest("Number of seats should be greater than zero");
-                if (bookingDto.Seats > ev.AvailableSeats)
-                    return BadRequest($"Only {ev.AvailableSeats} seats left for this event");
-
-                ev.AvailableSeats -= bookingDto.Seats;
-                await _eventRepository.UpdateAsync(ev, ev.PartitionKey);
-
-                var booking = _mapper.Map<Booking>(bookingDto);
-                booking.UserId = userId!;
-                booking.UserEmail = userEmail!;
-                booking.UserName = userName ;
-                var created = await _bookingRepository.AddAsync(booking);
-
-                return CreatedAtAction(nameof(GetById), new { eventId= created.PartitionKey, id = created.Id }, created);
+            return CreatedAtAction(nameof(GetById), new { eventId = booking!.PartitionKey, id = booking.Id }, booking);
             }
 
             [HttpGet("{eventId}/{id}")]
             public async Task <IActionResult> GetById(string eventId, string id)
             {
-                var booking = await _bookingRepository.GetByIdAsync(id, eventId);
+                var booking = await _bookingService.GetBookingByIdAsync(id, eventId);
                 if(booking == null)
                     return NotFound();
                 return Ok(booking);
@@ -75,44 +55,57 @@ namespace EventBookingPlatform.Controllers
             [HttpGet]
             public async Task<IActionResult> GetAll()
             {
-                var booking = await _bookingRepository.GetAllAsync();
+                var booking = await _bookingService.GetAllBookingsAsync();
                 return Ok(booking);
             }
 
          
-        [HttpDelete("{eventId}/{id}")]
-        public async Task <IActionResult> Delete (string eventId, string id)
-        {
-            var success = await _bookingRepository.DeleteAsync(id, eventId);
-            if(!success) return NotFound();
-            return NoContent();
+            [HttpDelete("{eventId}/{id}")]
+            public async Task <IActionResult> Delete (string eventId, string id)
+            {
+                var (success, message) = await _bookingService.DeleteBookingAsync(eventId, id);
+                if (!success) return NotFound(message);
+                return NoContent();
 
-        }
-
-
-        [HttpGet("by-event/{eventId}")]
-        public async Task<IActionResult> GetBookingsByEvent(string eventId)
-        {
-            var bookings = await _bookingRepository.FindAsync(b => b.EventId == eventId, eventId);
-
-            if (!bookings.Any())
-                return NotFound($"No bookings found for event ID {eventId}");
-
-            return Ok(bookings);
-        }
-
-        [HttpGet("my-bookings")]
-        public async Task<IActionResult> GetMyBookings()
-        {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var bookings = await _bookingRepository.FindAsync(b => b.UserId == userId, null);
-            return Ok(bookings);
-        }
+            }
 
 
+            [HttpGet("by-event/{eventId}")]
+            public async Task<IActionResult> GetBookingsByEvent(string eventId)
+            {
+                var bookings = await _bookingService.GetBookingsByEventAsync(eventId);
+
+                if (!bookings.Any())
+                    return NotFound($"No bookings found for event ID {eventId}");
+
+                return Ok(bookings);
+            }
+
+            [HttpGet("my-bookings")]
+            public async Task<IActionResult> GetMyBookings()
+            {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var bookings = await _bookingService.GetBookingsByUserAsync(userId);
+                return Ok(bookings);
+            }
+
+            [HttpPut("{eventId}/{id}")]
+            public async Task<IActionResult>Update(string eventId,string id, [FromBody] UpdateBookingDto bookingDto)
+            {
+            
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized("User not authorized");
+
+                var (success, message, updated) = await _bookingService.UpdateBookingAsync(userId, eventId, id, bookingDto);
+                if (!success) return BadRequest(message);
+
+                return Ok(updated);
+            }
     }
 }
 
