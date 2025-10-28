@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EventBookingPlatform.AzureServices;
 using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
@@ -10,11 +11,14 @@ namespace EventBookingPlatform.Services
         private readonly IGenericRepository<Booking> _bookingRepository;
         private readonly IGenericRepository<Event> _eventRepository;
         private IMapper _mapper;
-        public BookingService(IGenericRepository<Booking> bookingRepository,IGenericRepository<Event> eventRepository, IMapper mapper)
+        private readonly ServiceBusService _serviceBusService;
+        public BookingService(IGenericRepository<Booking> bookingRepository,IGenericRepository<Event> eventRepository,
+            IMapper mapper, ServiceBusService serviceBusService)
         {
             _bookingRepository = bookingRepository;
             _eventRepository = eventRepository;
             _mapper = mapper;
+            _serviceBusService = serviceBusService;
         }
 
 
@@ -36,6 +40,24 @@ namespace EventBookingPlatform.Services
             booking.UserName= userName;
 
             var created = await _bookingRepository.AddAsync(booking);
+
+            try
+            {
+                var message = new
+                {
+                    EventId = bookingDto.EventId,
+                    UserId = userId,
+                    UserName = userEmail,
+                    Seats = bookingDto.Seats,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _serviceBusService.SendMessageAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send message to ServiceBus : {ex.Message}");
+            }
+
             return (true,"Booking created succesfully.", created);
 
        }
