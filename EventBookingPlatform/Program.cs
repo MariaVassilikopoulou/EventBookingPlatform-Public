@@ -5,6 +5,7 @@ using Microsoft.Azure.Cosmos;
 using AutoMapper;
 using EventBookingPlatform.Services;
 using EventBookingPlatform.Dependencies;
+using EventBookingPlatform.AzureServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,7 @@ Console.WriteLine($"Cosmos setup complete. Database={databaseName}");
 
 builder.Services.Configure<CosmosDbSettings>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.AddSingleton(cosmosClient);
-
+builder.Services.AddSingleton<ServiceBusService>();
 // Register repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBookingService, BookingService>();
