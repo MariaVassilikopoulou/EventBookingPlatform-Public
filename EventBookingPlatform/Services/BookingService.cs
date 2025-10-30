@@ -47,7 +47,8 @@ namespace EventBookingPlatform.Services
                 {
                     EventId = bookingDto.EventId,
                     UserId = userId,
-                    UserName = userEmail,
+                    UserName = userName,
+                    UserEmail = userEmail,
                     Seats = bookingDto.Seats,
                     CreatedAt = DateTime.UtcNow
                 };
