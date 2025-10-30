@@ -58,7 +58,7 @@ namespace GoEventFunctionApp.Functions
 
         private async Task SendEmailAsync(BookingEmailDto booking)
         {
-            // Get SendGrid API key from configuration
+            
             var apiKey = _config["SendGridApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -68,18 +68,37 @@ namespace GoEventFunctionApp.Functions
 
             var client = new SendGridClient(apiKey);
 
-            // Get sender email from configuration or fallback to a test Gmail for dev
+            
             var fromEmail = _config["EmailFrom"] ?? "test@gmail.com";
             var from = new EmailAddress(fromEmail, "Go Event Platform");
 
             var to = new EmailAddress(booking.UserEmail);
-            var subject = $"Your booking confirmation, {booking.UserName}";
-            var plainText = $"Hi {booking.UserName}, your booking you made for the EVENT, for {booking.Seats} seats on {booking.CreatedAt:d} has been confirmed.";
-            var html = $"<strong>Hi {booking.UserName}</strong>,<br/>your booking you made for the EVENT <b>{booking.Seats}</b> seats on {booking.CreatedAt:d} has been confirmed.";
+            var subject = $" Booking request for {booking.EventName}";
 
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainText, html);
+            var plainText =
+            $@"Hi {booking.UserName},
 
-            // ✅ Sandbox mode for dev/testing
+                Your booking request for the event '{booking.EventName}'has been received.
+                Number of seats: {booking.Seats}
+                Booking date: {booking.CreatedAt:d}
+
+                ⚠️ Note: This booking is not confirmed until payment is completed. 
+                Please follow the instructions to complete your registration.
+
+                Thank you for using Flowvent!";
+
+                            var html =
+                            $@"<p><strong>Hi {booking.UserName},</strong></p>
+                <p>Your booking request for the event '<strong>{booking.EventName}</strong>' been received.</p>
+                <ul>
+                <li>Number of seats: <strong>{booking.Seats}</strong></li>
+                <li>Booking date: {booking.CreatedAt:d}</li>
+                </ul>
+                <p>⚠️ <strong>Note:</strong> This booking is not confirmed until payment is completed. 
+                Please follow the instructions to complete your registration.</p>
+                <p>Thank you for using <strong>Flowvent</strong>!</p>";
+                            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainText, html);
+
             var useSandbox = _config.GetValue<bool>("UseSandboxMode");
             msg.MailSettings = new MailSettings
             {
@@ -89,9 +108,9 @@ namespace GoEventFunctionApp.Functions
             var response = await client.SendEmailAsync(msg);
 
             if (response.IsSuccessStatusCode)
-                _logger.LogInformation("✅ Booking email sent to {Email}", booking.UserEmail);
+                _logger.LogInformation("Booking email sent to {Email}", booking.UserEmail);
             else
-                _logger.LogError("❌ Failed to send email to {Email}. Status: {Status}",
+                _logger.LogError("Failed to send email to {Email}. Status: {Status}",
                                  booking.UserEmail, response.StatusCode);
         }
     }
