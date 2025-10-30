@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBookingPlatform", "EventBookingPlatform\EventBookingPlatform.csproj", "{37F1AE41-26B5-4074-961E-4D4BA7BAA7E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoEventFunctionApp", "GoEventFunctionApp\GoEventFunctionApp.csproj", "{F7FCC71A-D395-438B-808C-B9C49C2A79A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{37F1AE41-26B5-4074-961E-4D4BA7BAA7E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37F1AE41-26B5-4074-961E-4D4BA7BAA7E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37F1AE41-26B5-4074-961E-4D4BA7BAA7E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7FCC71A-D395-438B-808C-B9C49C2A79A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7FCC71A-D395-438B-808C-B9C49C2A79A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7FCC71A-D395-438B-808C-B9C49C2A79A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7FCC71A-D395-438B-808C-B9C49C2A79A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
