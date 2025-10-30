@@ -46,6 +46,7 @@ namespace EventBookingPlatform.Services
                 var message = new
                 {
                     EventId = bookingDto.EventId,
+                    EventName = bookingDto.EventName,
                     UserId = userId,
                     UserName = userName,
                     UserEmail = userEmail,
