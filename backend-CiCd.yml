@@ -1,0 +1,47 @@
+trigger:
+- main
+- SettingBackendPipeline
+pool:
+  name: Default   # Replace 'Default' with the name of your self-hosted agent pool
+  demands:
+    - agent.name -equals DESKTOP-HJ6NA99
+
+variables:
+  buildConfiguration: 'Release'
+  solution: 'EventBookingPlatform.sln'
+  projectPath: 'EventBookingPlatform/EventBookingPlatform.csproj'
+  outputDir: '$(Build.ArtifactStagingDirectory)/publish'
+  
+steps:
+
+#Step 1
+- checkout: self
+  displayName: 'Checkout repository'
+
+#Step 2
+- task: UseDotNet@2
+  displayName: 'Install .NET Core SDK'
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+    
+
+#Step 3
+- script: dotnet restore $(solution)
+  displayName: 'Restore NuGet packages'
+
+#Step 4
+- script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore
+  displayName: 'Build solution'
+
+#Step 5
+- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
+  displayName: 'Publish Web API'
+
+#Step 6
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish build artifact'
+  inputs:
+    PathToPublish: '$(outputDir)'
+    ArtifactName: 'drop'
+
