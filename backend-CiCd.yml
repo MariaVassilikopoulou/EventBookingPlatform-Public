@@ -10,6 +10,7 @@ variables:
   buildConfiguration: 'Release'
   solution: 'EventBookingPlatform.sln'
   projectPath: 'EventBookingPlatform/EventBookingPlatform.csproj'
+  functionAppPath: 'GoEventFunctionApp/GoEventFunctionApp.csproj'
   outputDir: '$(Build.ArtifactStagingDirectory)/publish'
   
 steps:
@@ -38,10 +39,35 @@ steps:
 - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
   displayName: 'Publish Web API'
 
-#Step 6
+# Step 6: Publish Function App
+- script: dotnet publish $(functionAppPath) --configuration $(buildConfiguration) --output $(functionAppOutput)
+  displayName: 'Publish Function App'
+
+#Step 7
 - task: PublishBuildArtifacts@1
   displayName: 'Publish build artifact'
   inputs:
     PathToPublish: '$(outputDir)'
-    ArtifactName: 'drop'
+    ArtifactName: 'webapi-drop'
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish function app build artifacts'
+  inputs:
+    PathToPublish: '$(functionAppOutput)'
+    ArtifactName: 'functionapp-drop'
+
+# #Step 8
+# - task: AzureWebApp@1
+#   displayName: 'Deploy Web API to Azure App Service'
+#   inputs:
+#     azureSubscription: ''
+#     appName: ''
+#     package: '$(Build.ArtifactStagingDirectory)/webapi-drop'
+
+# #Step 9
+# - task: AzureWebApp@1
+#   displayName: 'Deploy Web API to Azure App Service'
+#   inputs:
+#     azureSubscription: ''
+#     appName: ''
+#     package: '$(Build.ArtifactStagingDirectory)/functionapp-drop'
 
