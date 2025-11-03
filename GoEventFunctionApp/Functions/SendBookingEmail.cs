@@ -24,6 +24,17 @@ namespace GoEventFunctionApp.Functions
         public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] string message)
         {
             _logger.LogInformation("Service Bus message received!");
+            // Test Key Vault secret fetch
+            var testSecret = _config["SendGridApiKey"]; // This is from Key Vault reference
+            if (string.IsNullOrWhiteSpace(testSecret))
+            {
+                _logger.LogError("❌ Cannot fetch SendGridApiKey from Key Vault.");
+                return;
+            }
+            else
+            {
+                _logger.LogInformation("✅ Successfully fetched SendGridApiKey from Key Vault.");
+            }
             BookingEmailDto? booking;
 
             try
