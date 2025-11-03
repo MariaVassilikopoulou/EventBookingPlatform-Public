@@ -1,10 +1,12 @@
 trigger:
 - main
 - SettingBackendPipeline
+# pool:
+#   name: Default   # Replace 'Default' with the name of your self-hosted agent pool
+#   demands:
+#     - agent.name -equals DESKTOP-HJ6NA99
 pool:
-  name: Default   # Replace 'Default' with the name of your self-hosted agent pool
-  demands:
-    - agent.name -equals DESKTOP-HJ6NA99
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -12,6 +14,10 @@ variables:
   projectPath: 'EventBookingPlatform/EventBookingPlatform.csproj'
   functionAppPath: 'GoEventFunctionApp/GoEventFunctionApp.csproj'
   outputDir: '$(Build.ArtifactStagingDirectory)/publish'
+  functionAppOutput: '$(Build.ArtifactStagingDirectory)/functionapp-publish'
+  azureSubscription: 'Azure-GoEvent-Connection'
+  webApiAppName: 'FlowventApi'
+  functionAppName: 'GoEventFunctionApp'
   
 steps:
 
@@ -55,19 +61,19 @@ steps:
     PathToPublish: '$(functionAppOutput)'
     ArtifactName: 'functionapp-drop'
 
-# #Step 8
-# - task: AzureWebApp@1
-#   displayName: 'Deploy Web API to Azure App Service'
-#   inputs:
-#     azureSubscription: ''
-#     appName: ''
-#     package: '$(Build.ArtifactStagingDirectory)/webapi-drop'
+#Step 8
+- task: AzureWebApp@1
+  displayName: 'Deploy Web API to Azure App Service'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appName: '$(webApiAppName)'
+    package: '$(Build.ArtifactStagingDirectory)/webapi-drop'
 
-# #Step 9
-# - task: AzureWebApp@1
-#   displayName: 'Deploy Web API to Azure App Service'
-#   inputs:
-#     azureSubscription: ''
-#     appName: ''
-#     package: '$(Build.ArtifactStagingDirectory)/functionapp-drop'
+#Step 9
+- task: AzureWebApp@1
+  displayName: 'Deploy Web API to Azure App Service'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appName: '$(functionAppName)'
+    package: '$(Build.ArtifactStagingDirectory)/functionapp-drop'
 
