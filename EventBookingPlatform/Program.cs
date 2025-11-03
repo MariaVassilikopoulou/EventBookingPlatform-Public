@@ -6,6 +6,7 @@ using AutoMapper;
 using EventBookingPlatform.Services;
 using EventBookingPlatform.Dependencies;
 using EventBookingPlatform.AzureServices;
+using Azure.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,12 @@ var database = databaseResponse.Database;
 database.CreateContainerIfNotExistsAsync("Events", "/partitionKey").GetAwaiter().GetResult();
 database.CreateContainerIfNotExistsAsync("Bookings", "/partitionKey").GetAwaiter().GetResult();
 Console.WriteLine($"Cosmos setup complete. Database={databaseName}");
+
+var keyVaultName = "KeyVault-GoEvent";
+var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+
+
+
 
 builder.Services.Configure<CosmosDbSettings>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.AddSingleton(cosmosClient);
@@ -52,6 +59,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddIdentityAndJwtAuth(builder.Configuration);
 
+builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
