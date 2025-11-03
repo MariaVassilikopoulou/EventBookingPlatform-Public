@@ -1,12 +1,12 @@
 trigger:
 - main
 - SettingBackendPipeline
-# pool:
-#   name: Default   # Replace 'Default' with the name of your self-hosted agent pool
-#   demands:
-#     - agent.name -equals DESKTOP-HJ6NA99
 pool:
-  vmImage: 'windows-latest'
+  name: Default   # Replace 'Default' with the name of your self-hosted agent pool
+  demands:
+    - agent.name -equals DESKTOP-HJ6NA99
+# pool:
+#   vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
