@@ -45,7 +45,7 @@ steps:
 # - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
 #   displayName: 'Publish Web API'
 # Step 5: Publish Web API
-- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --runtime win-x64 --self-contained true --output $(outputDir)
+- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --runtime win-x86 --self-contained true --output $(outputDir)
   displayName: 'Publish Web API (Self-Contained)'
 # Step 6: Publish Function App
 - script: dotnet publish $(functionAppPath) --configuration $(buildConfiguration) --output $(functionAppOutput)
