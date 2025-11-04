@@ -2,13 +2,13 @@ trigger:
 - main
 - StartingtheDeployment
 
-pool:
-  name: Default   # Using your self-hosted agent
-  demands:
-    - agent.name -equals DESKTOP-HJ6NA99
-# If you later get Microsoft parallelism access, replace the above with:
 # pool:
-#   vmImage: 'windows-latest'
+#   name: Default   # Using your self-hosted agent
+#   demands:
+#     - agent.name -equals DESKTOP-HJ6NA99
+If you later get Microsoft parallelism access, replace the above with:
+pool:
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -41,10 +41,12 @@ steps:
 - script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore
   displayName: 'Build solution'
 
+# # Step 5: Publish Web API
+# - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
+#   displayName: 'Publish Web API'
 # Step 5: Publish Web API
-- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
-  displayName: 'Publish Web API'
-
+- script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --runtime win-x64 --self-contained true --output $(outputDir)
+  displayName: 'Publish Web API (Self-Contained)'
 # Step 6: Publish Function App
 - script: dotnet publish $(functionAppPath) --configuration $(buildConfiguration) --output $(functionAppOutput)
   displayName: 'Publish Function App'
