@@ -39,7 +39,11 @@ namespace GoEventFunctionApp.Functions
 
             try
             {
-                booking = JsonSerializer.Deserialize<BookingEmailDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                booking = JsonSerializer.Deserialize<BookingEmailDto>
+                    (message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true,
+                        AllowTrailingCommas = true
+                    });
+            
 
                 //if (booking is null)
                 //{
