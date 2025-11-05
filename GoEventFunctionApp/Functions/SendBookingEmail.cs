@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using SendGrid.Helpers.Mail;
 using SendGrid;
+using System.Text;
 
 namespace GoEventFunctionApp.Functions
 {
@@ -21,47 +22,38 @@ namespace GoEventFunctionApp.Functions
 
 
         [Function("SendBookingEmail")]
-        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] string message)
+        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] byte[] messageBytes)
         {
             _logger.LogInformation("Service Bus message received!");
-            // Test Key Vault secret fetch
-            var testSecret = _config["SendGridApiKey"]; // This is from Key Vault reference
-            if (string.IsNullOrWhiteSpace(testSecret))
+
+            // Decode message
+            var message = Encoding.UTF8.GetString(messageBytes);
+            _logger.LogInformation("Raw Service Bus message: {Message}", message);
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                _logger.LogWarning("Message body is empty. Skipping processing.");
+                return;
+            }
+
+            // Fetch SendGrid key
+            var apiKey = _config["SendGridApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
                 _logger.LogError("❌ Cannot fetch SendGridApiKey from Key Vault.");
                 return;
             }
-            else
-            {
-                _logger.LogInformation("✅ Successfully fetched SendGridApiKey from Key Vault.");
-            }
-            BookingEmailDto? booking;
+            _logger.LogInformation("✅ Successfully fetched SendGridApiKey from Key Vault.");
 
+            // Deserialize message
+            BookingEmailDto? booking;
             try
             {
-
-                // Remove leading/trailing quotes if they exist
-                if (message.StartsWith("\"") && message.EndsWith("\""))
-                    message = message[1..^1]; // C# 8 slice operator
-
-                // Unescape any escaped quotes
-                message = message.Replace("\\\"", "\"");
-                _logger.LogInformation("Raw Service Bus message: {Message}", message);
-
-                booking = JsonSerializer.Deserialize<BookingEmailDto>
-                    (message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true,
-                        AllowTrailingCommas = true
-                    });
-            
-
-                //if (booking is null)
-                //{
-                //    _logger.LogWarning("Message deserialized to null. Invalid format.");
-                //    return;
-                //}
-
-                //_logger.LogInformation($"Booking for {booking.UserName}, email {booking.UserEmail}, seats {booking.Seats}");
-                //_logger.LogInformation("✅ Booking email sent (demo)");
+                booking = JsonSerializer.Deserialize<BookingEmailDto>(message, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    AllowTrailingCommas = true
+                });
             }
             catch (JsonException ex)
             {
@@ -74,21 +66,23 @@ namespace GoEventFunctionApp.Functions
                 _logger.LogWarning("Message deserialized to null. Invalid format.");
                 return;
             }
+
             _logger.LogInformation($"Booking for {booking.UserName}, email {booking.UserEmail}, seats {booking.Seats}");
 
-            await SendEmailAsync(booking);
+            // Send email
+            await SendEmailAsync(booking, apiKey);
         }
 
 
-        private async Task SendEmailAsync(BookingEmailDto booking)
+        private async Task SendEmailAsync(BookingEmailDto booking, string apiKey)
         {
             
-            var apiKey = _config["SendGridApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                _logger.LogError("SendGrid API key not configured.");
-                return;
-            }
+            //var apiKey = _config["SendGridApiKey"];
+            //if (string.IsNullOrWhiteSpace(apiKey))
+            //{
+            //    _logger.LogError("SendGrid API key not configured.");
+            //    return;
+            //}
 
             var client = new SendGridClient(apiKey);
 
