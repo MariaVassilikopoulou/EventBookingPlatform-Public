@@ -22,8 +22,9 @@ namespace GoEventFunctionApp.Functions
 
 
         [Function("SendBookingEmail")]
-        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] string message)
+        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] byte[] messageBody)
         {
+            string message = Encoding.UTF8.GetString(messageBody);
             _logger.LogInformation("Service Bus message received!");
             _logger.LogInformation("Raw Service Bus message: {Message}", message);
 
