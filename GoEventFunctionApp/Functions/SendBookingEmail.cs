@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using SendGrid.Helpers.Mail;
 using SendGrid;
 using System.Text;
+using Azure.Messaging.ServiceBus;
 
 namespace GoEventFunctionApp.Functions
 {
@@ -22,13 +23,14 @@ namespace GoEventFunctionApp.Functions
 
 
         [Function("SendBookingEmail")]
-        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] byte[] messageBody)
+        public async Task Run([ServiceBusTrigger("eventbookings", Connection = "ServiceBusConnection")] ServiceBusReceivedMessage message)
         {
-            string message = Encoding.UTF8.GetString(messageBody);
-            _logger.LogInformation("Service Bus message received!");
-            _logger.LogInformation("Raw Service Bus message: {Message}", message);
+            string messageBody = message.Body.ToString();
 
-            if (string.IsNullOrWhiteSpace(message))
+            _logger.LogInformation("Service Bus message received!");
+            _logger.LogInformation("Raw Service Bus message: {Message}", messageBody);
+
+            if (string.IsNullOrWhiteSpace(messageBody))
             {
                 _logger.LogWarning("Message body is empty. Skipping processing.");
                 return;
@@ -47,7 +49,7 @@ namespace GoEventFunctionApp.Functions
             try
             {
                 booking = JsonSerializer.Deserialize<BookingEmailDto>(
-                    message,
+                    messageBody,
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
@@ -56,7 +58,7 @@ namespace GoEventFunctionApp.Functions
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "Failed to deserialize message: {Message}", message);
+                _logger.LogError(ex, "Failed to deserialize message: {Message}", messageBody);
                 return;
             }
 
