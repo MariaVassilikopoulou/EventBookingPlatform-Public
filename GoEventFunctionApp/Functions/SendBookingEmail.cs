@@ -39,6 +39,15 @@ namespace GoEventFunctionApp.Functions
 
             try
             {
+
+                // Remove leading/trailing quotes if they exist
+                if (message.StartsWith("\"") && message.EndsWith("\""))
+                    message = message[1..^1]; // C# 8 slice operator
+
+                // Unescape any escaped quotes
+                message = message.Replace("\\\"", "\"");
+                _logger.LogInformation("Raw Service Bus message: {Message}", message);
+
                 booking = JsonSerializer.Deserialize<BookingEmailDto>
                     (message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true,
                         AllowTrailingCommas = true
