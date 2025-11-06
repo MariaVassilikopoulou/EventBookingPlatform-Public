@@ -69,6 +69,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventBookingPlatform API V1");
+        c.RoutePrefix = string.Empty;
     });
 }
 app.UseCors("AllowFrontend");
