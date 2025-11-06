@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using System.Text;
 using System.Text.Json;
 
 namespace EventBookingPlatform.AzureServices
@@ -18,7 +19,8 @@ namespace EventBookingPlatform.AzureServices
         {
             var sender = _client.CreateSender(_queueName);
             string json = JsonSerializer.Serialize(message);
-            await sender.SendMessageAsync(new ServiceBusMessage(json));
+            var body = Encoding.UTF8.GetBytes(json);
+            await sender.SendMessageAsync(new ServiceBusMessage(body));
         }
         public async ValueTask DisposeAsync()
         {

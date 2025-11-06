@@ -1,10 +1,12 @@
 trigger:
 - main
-- SettingBackendPipeline
+- StartingtheDeployment
+
 pool:
-  name: Default   # Replace 'Default' with the name of your self-hosted agent pool
+  name: Default   # Using your self-hosted agent
   demands:
     - agent.name -equals DESKTOP-HJ6NA99
+# # If you later get Microsoft parallelism access, replace the above with:
 # pool:
 #   vmImage: 'windows-latest'
 
@@ -18,62 +20,82 @@ variables:
   azureSubscription: 'Azure-GoEvent-Connection'
   webApiAppName: 'FlowventApi'
   functionAppName: 'GoEventFunctionApp'
-  
-steps:
 
-#Step 1
+steps:
+# Step 1: Checkout code
 - checkout: self
   displayName: 'Checkout repository'
 
-#Step 2
+# Step 2: Install .NET SDK
 - task: UseDotNet@2
   displayName: 'Install .NET Core SDK'
   inputs:
     packageType: 'sdk'
     version: '8.x'
-    
 
-#Step 3
+# Step 3: Restore NuGet packages
 - script: dotnet restore $(solution)
   displayName: 'Restore NuGet packages'
 
-#Step 4
+# Step 4: Build solution
 - script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore
   displayName: 'Build solution'
 
-#Step 5
+# # Step 5: Publish Web API
+# - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
+#   displayName: 'Publish Web API'
+# Step 5: Publish Web API
+# - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --runtime win-x86 --self-contained true --output $(outputDir)
+#   displayName: 'Publish Web API (Self-Contained)'
 - script: dotnet publish $(projectPath) --configuration $(buildConfiguration) --output $(outputDir)
-  displayName: 'Publish Web API'
+  displayName: 'Publish Web API (Framework-dependent)'
 
 # Step 6: Publish Function App
 - script: dotnet publish $(functionAppPath) --configuration $(buildConfiguration) --output $(functionAppOutput)
   displayName: 'Publish Function App'
 
-#Step 7
+# Step 7: Publish build artifacts
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish build artifact'
+  displayName: 'Publish Web API artifact'
   inputs:
     PathToPublish: '$(outputDir)'
     ArtifactName: 'webapi-drop'
+
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish function app build artifacts'
+  displayName: 'Publish Function App artifact'
   inputs:
     PathToPublish: '$(functionAppOutput)'
     ArtifactName: 'functionapp-drop'
 
-#Step 8
+# Step 8: Download artifacts before deployment
+- task: DownloadBuildArtifacts@1
+  displayName: 'Download Web API artifact'
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'webapi-drop'
+    downloadPath: '$(System.ArtifactsDirectory)'
+
+- task: DownloadBuildArtifacts@1
+  displayName: 'Download Function App artifact'
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'functionapp-drop'
+    downloadPath: '$(System.ArtifactsDirectory)'
+
+# Step 9: Deploy Web API to Azure App Service
 - task: AzureWebApp@1
   displayName: 'Deploy Web API to Azure App Service'
   inputs:
     azureSubscription: '$(azureSubscription)'
     appName: '$(webApiAppName)'
-    package: '$(Build.ArtifactStagingDirectory)/webapi-drop'
+    package: '$(System.ArtifactsDirectory)/webapi-drop'
 
-#Step 9
+# Step 10: Deploy Function App to Azure
 - task: AzureWebApp@1
-  displayName: 'Deploy Web API to Azure App Service'
+  displayName: 'Deploy Function App to Azure'
   inputs:
     azureSubscription: '$(azureSubscription)'
     appName: '$(functionAppName)'
-    package: '$(Build.ArtifactStagingDirectory)/functionapp-drop'
-
+    package: '$(System.ArtifactsDirectory)/functionapp-drop'
