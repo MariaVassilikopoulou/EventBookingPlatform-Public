@@ -10,7 +10,9 @@ using Azure.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+var keyVaultName = "KeyVault-GoEvent";
+var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
 
 string accountEndpoint = builder.Configuration["CosmosDb:AccountEndpoint"];
 string accountKey = builder.Configuration["CosmosDb:AccountKey"];
@@ -26,8 +28,7 @@ database.CreateContainerIfNotExistsAsync("Events", "/partitionKey").GetAwaiter()
 database.CreateContainerIfNotExistsAsync("Bookings", "/partitionKey").GetAwaiter().GetResult();
 Console.WriteLine($"Cosmos setup complete. Database={databaseName}");
 
-var keyVaultName = "KeyVault-GoEvent";
-var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+
 
 
 
@@ -59,14 +60,17 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddIdentityAndJwtAuth(builder.Configuration);
 
-builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventBookingPlatform API V1");
+        c.RoutePrefix = string.Empty;
+    });
 }
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
