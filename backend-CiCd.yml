@@ -1,14 +1,14 @@
 trigger:
 - main
-- StartingtheDeployment
+
+
+# pool:
+#   name: Default   # Using your self-hosted agent
+#   demands:
+#     - agent.name -equals DESKTOP-HJ6NA99
 
 pool:
-  name: Default   # Using your self-hosted agent
-  demands:
-    - agent.name -equals DESKTOP-HJ6NA99
-# # If you later get Microsoft parallelism access, replace the above with:
-# pool:
-#   vmImage: 'windows-latest'
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
