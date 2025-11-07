@@ -1,28 +1,4 @@
-﻿//using Microsoft.Extensions.Hosting;
-//using Microsoft.Azure.Functions.Worker.Extensions.ServiceBus;
-//using Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore;
-//using Microsoft.Azure.Functions.Worker;
-//using Microsoft.Extensions.DependencyInjection;
-
-//var host = Host.CreateDefaultBuilder(args)
-
-//    .ConfigureFunctionsWorkerDefaults((IFunctionsWorkerApplicationBuilder workerApplicationBuilder) =>
-//    {
-
-//    })
-
-//    .ConfigureFunctionsWebApplication()
-
-
-//    .ConfigureServices(services =>
-//    {
-
-//    })
-//    .Build();
-
-//host.Run();
-
-using Azure.Identity;
+﻿using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

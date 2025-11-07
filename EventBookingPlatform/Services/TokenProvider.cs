@@ -22,7 +22,7 @@ namespace EventBookingPlatform.Services
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Determine the role claim based on the IsAdmin flag
+            
             var userRole = user.IsAdmin ? "Admin" : "User";
 
             var claims = new List<Claim>

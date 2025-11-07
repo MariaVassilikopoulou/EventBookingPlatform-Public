@@ -31,17 +31,16 @@ namespace EventBookingPlatform.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            // Use Email as UserName, as is common in modern APIs
+           
             var user = new User
             {
                 UserName = dto.Email,
                 Email = dto.Email,
                 FullName = dto.FullName,
-                IsAdmin = false // Default to standard user
+                IsAdmin = false 
             };
 
-            // **Admin Seeding Logic (Optional, but often needed for setup)**
-            // If you want the very first user or a specific email to be an admin:
+           
             var initialAdminEmail = _configuration["Admin:InitialAdminEmail"];
             if (!string.IsNullOrEmpty(initialAdminEmail) && dto.Email.Equals(initialAdminEmail, StringComparison.OrdinalIgnoreCase))
             {
@@ -52,11 +51,11 @@ namespace EventBookingPlatform.Controllers
 
             if (result.Succeeded)
             {
-                // Sign the user in and generate the tokens
+                
                 return await GenerateAuthTokenResponse(user);
             }
 
-            // Return detailed errors if registration failed
+            
             return BadRequest(result.Errors.Select(e => e.Description).ToList());
         }
 
@@ -90,13 +89,13 @@ namespace EventBookingPlatform.Controllers
 
         private async Task<IActionResult> GenerateAuthTokenResponse(User user)
         {
-            // 1. Generate JWT (handled by your custom provider)
+            
             var token = _tokenProvider.Create(user);
 
-            // 2. Generate Refresh Token (optional, but good practice)
+           
             var refreshToken = _tokenProvider.GenerateRefreshToken();
 
-            // Note: In a real app, you would save the refresh token to the database here.
+            
 
             return Ok(new AuthResponseDto
             {
