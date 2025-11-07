@@ -65,6 +65,10 @@ namespace EventBookingPlatform.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
+            if (dto == null)
+            {
+                return BadRequest("Login data missing!");
+            }
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
