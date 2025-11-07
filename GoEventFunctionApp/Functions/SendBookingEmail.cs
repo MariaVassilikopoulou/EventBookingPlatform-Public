@@ -36,7 +36,7 @@ namespace GoEventFunctionApp.Functions
                 return;
             }
 
-            // Fetch SendGrid API key from Key Vault
+            
             var apiKey = _config["SendGridApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
             {
