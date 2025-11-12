@@ -77,7 +77,7 @@ namespace GoEventFunctionApp.Functions
         {
             var client = new SendGridClient(apiKey);
             var fromEmail = _config["EmailFrom"] ?? "test@gmail.com";
-            var from = new EmailAddress(fromEmail, "Go Event Platform");
+            var from = new EmailAddress(fromEmail, "Flowvent ~EventBookingPlatform~");
             var to = new EmailAddress(booking.UserEmail);
             var subject = $"Booking request for {booking.EventName}";
 
