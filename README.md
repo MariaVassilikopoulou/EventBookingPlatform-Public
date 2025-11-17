@@ -19,14 +19,14 @@ Application Insights is connected to both the Web API and Function App for monit
 
 ## ⚙️[Technologies] 
 
-#### Backend: ASP.NET Core 8 (C#), REST APIs  
-#### Frontend: Next.js, TypeScript  
-#### Database: Azure Cosmos DB  
-#### Messaging: Azure Service Bus (Queue integration)  
-#### Serverless: Azure Function App (triggered by Service Bus)  
-#### Security: Azure Key Vault, Managed Identity, JWT Authentication  
-#### Monitoring: Application Insights  
-#### CI/CD: Azure DevOps Pipelines (YAML-based automation)
+- Backend: ASP.NET Core 8 (C#), REST APIs  
+- Frontend: Next.js, TypeScript  
+- Database: Azure Cosmos DB  
+- Messaging: Azure Service Bus (Queue integration)  
+- Serverless: Azure Function App (triggered by Service Bus)  
+- Security: Azure Key Vault, Managed Identity, JWT Authentication  
+- Monitoring: Application Insights  
+- CI/CD: Azure DevOps Pipelines (YAML-based automation)
 
 ## 🌩️[Azure Integration]  
 
