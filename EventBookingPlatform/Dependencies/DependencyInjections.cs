@@ -27,9 +27,9 @@ namespace EventBookingPlatform.Dependencies
             .AddEntityFrameworkStores<ApplicationDbContext>() 
             .AddSignInManager<SignInManager<User>>();
 
-            var secretKey = configuration["Jwt:SecretKey"];
-            var issuer = configuration["Jwt:Issuer"];
-            var audience = configuration["Jwt:Audience"];
+            var secretKey = configuration["Jwt-SecretKey"];
+            var issuer = configuration["Jwt-Issuer"];
+            var audience = configuration["Jwt-Audience"];
             services.AddScoped<ITokenProvider, TokenProvider>();
 
             
