@@ -14,10 +14,16 @@ var keyVaultName = "KeyVault-GoEvent";
 var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
 builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
 
-string accountEndpoint = builder.Configuration["CosmosDb:AccountEndpoint"];
-string accountKey = builder.Configuration["CosmosDb:AccountKey"];
-string databaseName = builder.Configuration["CosmosDb:DatabaseName"];
+string accountEndpoint = builder.Configuration["CosmosDb-AccountEndpoint"];
+string accountKey = builder.Configuration["CosmosDb-AccountKey"];
+string databaseName = builder.Configuration["CosmosDb-DatabaseName"];
 
+var cosmosDbSettings = new CosmosDbSettings
+{
+    AccountEndpoint = accountEndpoint,
+    AccountKey = accountKey,
+    DatabaseName = databaseName
+};
 
 var cosmosClient = new CosmosClient(accountEndpoint, accountKey);
 var databaseResponse = cosmosClient.CreateDatabaseIfNotExistsAsync(databaseName).GetAwaiter().GetResult();
@@ -32,8 +38,8 @@ Console.WriteLine($"Cosmos setup complete. Database={databaseName}");
 
 
 
-
-builder.Services.Configure<CosmosDbSettings>(builder.Configuration.GetSection("CosmosDb"));
+builder.Services.AddSingleton(Microsoft.Extensions.Options.Options.Create(cosmosDbSettings));
+//builder.Services.Configure<CosmosDbSettings>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.AddSingleton(cosmosClient);
 builder.Services.AddSingleton<ServiceBusService>();
 // Register repositories
@@ -69,7 +75,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventBookingPlatform API V1");
-        c.RoutePrefix = string.Empty;
+        c.RoutePrefix = app.Environment.IsDevelopment() ? "swagger" : string.Empty;
     });
 }
 app.UseCors("AllowFrontend");
