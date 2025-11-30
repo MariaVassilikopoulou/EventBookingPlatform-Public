@@ -7,6 +7,8 @@ using EventBookingPlatform.Services;
 using EventBookingPlatform.Dependencies;
 using EventBookingPlatform.AzureServices;
 using Azure.Identity;
+using EventBookingPlatform.Services.AIServices;
+using EventBookingPlatform.Domain.Models;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +47,7 @@ builder.Services.AddSingleton<ServiceBusService>();
 // Register repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IBookingService, BookingService>();
+//builder.Services.AddScoped<IGenericRepository<Event>, GenericRepository<Event>>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -53,7 +56,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGenWithAuth();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
-
+builder.Services.AddScoped<AIAssistantService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
