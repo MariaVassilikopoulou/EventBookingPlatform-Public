@@ -102,19 +102,47 @@ namespace EventBookingPlatform.Controllers
 
             };
 
-            var answer = await _aiService.AskAboutEventAsync(prompt);
+            var answer = await _aiService.AskAboutEventWithRecommendationsAsync(prompt, eventsToUse);
             return Ok(new { answer });
         }
 
-        // DTO for frontend request
+
+        [HttpPost("chat")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Chat([FromBody] ChatRequest request)
+        {
+            if (request.Messages == null || !request.Messages.Any())
+                return BadRequest("No messages provided.");
+            var events= (await _repository.GetAllAsync()).ToList();
+
+            if(!events.Any())
+            {
+                return Ok(new
+                {
+                    answer = new AIResponseDto
+                    {
+                        AnswerText = "I'd love to help, but there are no events available right now.",
+                        RecommendedEvents = new List<EventDto>()
+                    }
+                });
+
+            }
+
+             var answer = await _aiService.AskChatWithEventsAsync(request.Messages, events);
+            return Ok(new { answer });
+        }
+
+        
         public class UserQuestionDto
         {
             public string UserQuestion { get; set; }
         
         }
 
-        }
+        
+
     }
+}
 
 
 
