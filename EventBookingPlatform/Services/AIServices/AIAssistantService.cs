@@ -20,54 +20,33 @@ namespace EventBookingPlatform.Services.AIServices
         public AIAssistantService(IConfiguration configuration)
         {
             _httpClient = new HttpClient();
-
             _apiKey = configuration["OpenAI:ApiKey"]
                  ?? throw new Exception("OpenAI:ApiKey is missing");
-
-            // Base Endpoint (e.g., https://aiagenthelper.openai.azure.com/)
             _endpoint = configuration["OpenAI:Endpoint"]
                  ?? throw new Exception("OpenAI:Endpoint is missing");
-
             _model = configuration["OpenAI:Model"]
-                 ?? "gpt-4o-mini"; // This is the deployment name on Azure
-
+                 ?? "gpt-4o-mini"; 
             _apiVersion = configuration["OpenAI:ApiVersion"]
                 ?? throw new Exception("OpenAI:ApiVersion is missing");
-
-            // Construct the full Azure OpenAI URL
-            // Format: {endpoint}/openai/deployments/{model}/chat/completions?api-version={apiVersion}
             _chatCompletionUrl = $"{_endpoint}openai/deployments/{_model}/chat/completions?api-version={_apiVersion}";
-
             _httpClient.DefaultRequestHeaders.Add("api-key", _apiKey);
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            // Azure OpenAI is specific, you may also need to set the Content-Type header
-            // For PostAsJsonAsync, this is usually handled, but good to be aware.
+            
         }
 
 
         public async Task<string> AskAboutEventAsync(EventAIPrompt prompt)
         {
-            var requestBody = new
-            {
-                messages = new[]
-                {
+            var requestBody = new{messages = new[]{
             new { role = "system", content = "You are an event assistant. Give clear, friendly, helpful answers." },
-            new { role = "user", content = BuildPrompt(prompt) }
-        }
-            };
-
-            // Use the new, correct URL for the request
+            new { role = "user", content = BuildPrompt(prompt) }}};
             var response = await _httpClient.PostAsJsonAsync(_chatCompletionUrl, requestBody); 
-
-            // The rest of your error handling and parsing is now correct and will catch 
-            // issues *after* a successful connection is made.
             if (!response.IsSuccessStatusCode)
             {
                 var text = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"OpenAI request failed: {response.StatusCode} - {text}");
                 return "Sorry, I couldn't get a response.";
             }
-
             var result = await response.Content.ReadFromJsonAsync<OpenAIResponse>();
             return result?.choices?[0]?.message?.content ?? "No response.";
         }
@@ -77,25 +56,21 @@ namespace EventBookingPlatform.Services.AIServices
         {
             if (string.IsNullOrWhiteSpace(userMessage))
                 return false;
-
             var keywords = new[]
             {
-        "event", "events", "recommend", "show", "list", "kids",
-        "cheapest", "expensive", "workshop", "concert", "cheap",
-        "family", "things to do", "activities"
-    };
-
+                "event", "events", "recommend", "show", "list", "kids",
+                "cheapest", "expensive", "workshop", "concert", "cheap",
+                "family", "things to do", "activities"
+            };
             var lower = new string(userMessage.ToLower().Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
             return keywords.Any(k => lower.Contains(k));
         }
 
 
-        // NEW: Enhanced chat method with event context
         public async Task<AIResponseDto> AskChatWithEventsAsync(List<ChatMessage> messages, List<Event> events)
         {
             try
             {
-                // Build event context string
                 var eventInfo = events.Select((ev, idx) => $@"
                 Event {idx + 1}:
                 - Name: {ev.Name}
@@ -119,14 +94,11 @@ namespace EventBookingPlatform.Services.AIServices
 
                     Your job: give a short helpful message, while the frontend displays event cards.
                     ";
-
-                // Add system message with event context
                 var messagesWithContext = new List<ChatMessage>
                 {
                     new ChatMessage { Role = "system", Content = eventContext }
                 };
                 messagesWithContext.AddRange(messages);
-
                 var requestBody = new
                 {
                     messages = messagesWithContext.Select(m => new
@@ -137,7 +109,6 @@ namespace EventBookingPlatform.Services.AIServices
                 };
 
                 var response = await _httpClient.PostAsJsonAsync(_chatCompletionUrl, requestBody);
-
                 if (!response.IsSuccessStatusCode)
                 {
                     var text = await response.Content.ReadAsStringAsync();
@@ -148,12 +119,8 @@ namespace EventBookingPlatform.Services.AIServices
                         RecommendedEvents = new List<EventDto>()
                     };
                 }
-
                 var result = await response.Content.ReadFromJsonAsync<OpenAIResponse>();
                 var answerText = result?.choices?[0]?.message?.content ?? "No response.";
-
-                // Intelligently select relevant events based on conversation
-                //var recommendedEvents = SelectRelevantEvents(messages, events, answerText);
                 var lastUserMessage = messages.LastOrDefault(m => m.Role.ToLower() == "user")?.Content ?? "";
                 var recommendedEvents = UserIsAskingForEvents(lastUserMessage)
                     ? SelectRelevantEvents(messages, events, answerText)
@@ -176,9 +143,6 @@ namespace EventBookingPlatform.Services.AIServices
             }
         }
 
-
-
-        // Helper method to select relevant events based on context
         private List<EventDto> SelectRelevantEvents(List<ChatMessage> messages, List<Event> events, string aiResponse)
         {
             var lastUserMessage = messages.LastOrDefault(m => m.Role.ToLower() == "user")?.Content?.ToLower() ?? "";
@@ -381,8 +345,6 @@ namespace EventBookingPlatform.Services.AIServices
                     filteredEvents = events.OrderBy(e => e.Date);
                 }
             }
-
-
             // Return top 3 events
             return filteredEvents
                 .Take(3)
@@ -403,16 +365,13 @@ namespace EventBookingPlatform.Services.AIServices
             {
                 messages = messages
             };
-
             var response = await _httpClient.PostAsJsonAsync(_chatCompletionUrl, requestBody);
-
             if (!response.IsSuccessStatusCode)
             {
                 var text = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"OpenAI request failed: {response.StatusCode} - {text}");
                 return "Sorry, I couldn't get a response.";
             }
-
             var result = await response.Content.ReadFromJsonAsync<OpenAIResponse>();
             return result?.choices?[0]?.message?.content ?? "No response.";
         }
@@ -420,7 +379,6 @@ namespace EventBookingPlatform.Services.AIServices
 
         public async Task<AIResponseDto> AskAboutEventWithRecommendationsAsync(EventAIPrompt prompt, List<Event> eventsToUse)
         {
-            // 1. Call AI for the textual answer
             var answerText = await AskAboutEventAsync(prompt);
 
             var includeEvents = UserIsAskingForEvents(prompt.UserQuestion);
@@ -439,7 +397,7 @@ namespace EventBookingPlatform.Services.AIServices
                     .ToList()
                 : new List<EventDto>();
 
-            // 3. Return both AI text and events
+            
             return new AIResponseDto
             {
                 AnswerText = answerText,
@@ -451,17 +409,13 @@ namespace EventBookingPlatform.Services.AIServices
         private string BuildPrompt(EventAIPrompt p)
         {
             return $@"
-                        Here is event information:
-                        User question: {p.UserQuestion}
-                       - Total number of events stored: {p.TotalEvents}
-                         Details of all events:{p.AllEventDetails}
-                        Answer in a friendly and helpful way.If the user asks for cheapest, most expensive, by date, or for recommendations, compute it from the list above.
-                        ";
+                  Here is event information:
+                  User question: {p.UserQuestion}
+                - Total number of events stored: {p.TotalEvents}
+                  Details of all events:{p.AllEventDetails}
+                  Answer in a friendly and helpful way.If the user asks for cheapest, most expensive, by date, or for recommendations, compute it from the list above.";
         }
     }
-
-
-
 
 
     public class EventAIPrompt
