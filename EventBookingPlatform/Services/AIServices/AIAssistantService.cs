@@ -16,7 +16,6 @@ namespace EventBookingPlatform.Services.AIServices
         private readonly string _chatCompletionUrl;
         private readonly string _apiVersion;
 
-
         public AIAssistantService(IConfiguration configuration)
         {
             _httpClient = new HttpClient();
@@ -31,10 +30,9 @@ namespace EventBookingPlatform.Services.AIServices
             _chatCompletionUrl = $"{_endpoint}openai/deployments/{_model}/chat/completions?api-version={_apiVersion}";
             _httpClient.DefaultRequestHeaders.Add("api-key", _apiKey);
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            
         }
 
-
+        // === Main Public Methods ===
         public async Task<string> AskAboutEventAsync(EventAIPrompt prompt)
         {
             var requestBody = new{messages = new[]{
@@ -51,6 +49,39 @@ namespace EventBookingPlatform.Services.AIServices
             return result?.choices?[0]?.message?.content ?? "No response.";
         }
 
+        private string BuildPrompt(EventAIPrompt p)
+        {
+            return $@"
+                  Here is event information:
+                  User question: {p.UserQuestion}
+                - Total number of events stored: {p.TotalEvents}
+                  Details of all events:{p.AllEventDetails}
+                  Answer in a friendly and helpful way.If the user asks for cheapest, most expensive, by date, or for recommendations, compute it from the list above.";
+        }
+
+        public async Task<AIResponseDto> AskAboutEventWithRecommendationsAsync(EventAIPrompt prompt, List<Event> eventsToUse)
+        {
+            var answerText = await AskAboutEventAsync(prompt);
+            var includeEvents = UserIsAskingForEvents(prompt.UserQuestion);
+            var topEvents = includeEvents
+                ? eventsToUse
+                    .Take(3)
+                    .Select(ev => new EventDto
+                    {
+                        Name = ev.Name,
+                        Location = ev.Location,
+                        Date = ev.Date,
+                        Price = ev.Price,
+                        SeatsAvailable = ev.AvailableSeats
+                    })
+                    .ToList()
+                : new List<EventDto>();
+            return new AIResponseDto
+            {
+                AnswerText = answerText,
+                RecommendedEvents = topEvents
+            };
+        }
 
         private bool UserIsAskingForEvents(string userMessage)
         {
@@ -65,7 +96,6 @@ namespace EventBookingPlatform.Services.AIServices
             var lower = new string(userMessage.ToLower().Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
             return keywords.Any(k => lower.Contains(k));
         }
-
 
         public async Task<AIResponseDto> AskChatWithEventsAsync(List<ChatMessage> messages, List<Event> events)
         {
@@ -375,49 +405,9 @@ namespace EventBookingPlatform.Services.AIServices
             var result = await response.Content.ReadFromJsonAsync<OpenAIResponse>();
             return result?.choices?[0]?.message?.content ?? "No response.";
         }
-
-
-        public async Task<AIResponseDto> AskAboutEventWithRecommendationsAsync(EventAIPrompt prompt, List<Event> eventsToUse)
-        {
-            var answerText = await AskAboutEventAsync(prompt);
-
-            var includeEvents = UserIsAskingForEvents(prompt.UserQuestion);
-
-            var topEvents = includeEvents
-                ? eventsToUse
-                    .Take(3)
-                    .Select(ev => new EventDto
-                    {
-                        Name = ev.Name,
-                        Location = ev.Location,
-                        Date = ev.Date,
-                        Price = ev.Price,
-                        SeatsAvailable = ev.AvailableSeats
-                    })
-                    .ToList()
-                : new List<EventDto>();
-
-            
-            return new AIResponseDto
-            {
-                AnswerText = answerText,
-                RecommendedEvents = topEvents
-            };
-        }
-
-
-        private string BuildPrompt(EventAIPrompt p)
-        {
-            return $@"
-                  Here is event information:
-                  User question: {p.UserQuestion}
-                - Total number of events stored: {p.TotalEvents}
-                  Details of all events:{p.AllEventDetails}
-                  Answer in a friendly and helpful way.If the user asks for cheapest, most expensive, by date, or for recommendations, compute it from the list above.";
-        }
     }
 
-
+    // === DTOs and Helper Classes ===
     public class EventAIPrompt
     {
         public string Name { get; set; }
@@ -458,7 +448,6 @@ namespace EventBookingPlatform.Services.AIServices
         public string Content { get; set; }
     }
 
-
     public class AIResponseDto
     {
         public string AnswerText { get; set; }
@@ -473,7 +462,6 @@ namespace EventBookingPlatform.Services.AIServices
         public decimal Price { get; set; }
         public int SeatsAvailable { get; set; }
     }
-
 }
 
 
