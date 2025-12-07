@@ -52,7 +52,8 @@ namespace EventBookingPlatform.Controllers
             var keywords = dto.UserQuestion.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var relevantEvents = events.Where(e => keywords.Any(k => e.Name.Contains(k, StringComparison.OrdinalIgnoreCase)||
                                               e.Location.Contains(k ?? "", StringComparison.OrdinalIgnoreCase))).ToList();
-
+//The controller tries to find relevant events by matching keywords from the user’s question to event names and locations.
+//If matches are found, it uses those; otherwise, it uses all events.
             var eventsToUse = relevantEvents.Any() ? relevantEvents : events;
             var eventInfo= events.Select((ev,idx)=>$@"
               Event {idx+1}:
