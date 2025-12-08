@@ -49,9 +49,22 @@ namespace EventBookingPlatform.Controllers
             var events = (await _repository.GetAllAsync()).ToList();
             if (!events.Any())
                 return BadRequest("No events available");
-            var keywords = dto.UserQuestion.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var relevantEvents = events.Where(e => keywords.Any(k => e.Name.Contains(k, StringComparison.OrdinalIgnoreCase)||
-                                              e.Location.Contains(k ?? "", StringComparison.OrdinalIgnoreCase))).ToList();
+            //var keywords = dto.UserQuestion.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+             var keywords = dto.UserQuestion
+                            .ToLower()
+                            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                            .Where(w => w.Length > 2)
+                            .ToList();
+
+           /* var relevantEvents = events.Where(e => keywords.Any(k => e.Name.Contains(k, StringComparison.OrdinalIgnoreCase)||
+                                              e.Location.Contains(k ?? "", StringComparison.OrdinalIgnoreCase))).ToList();*/
+                var relevantEvents = events
+                                    .Where(e => keywords.Any(k =>
+                                        e.Name.ToLower().Contains(k) ||
+                                        e.Location.ToLower().Contains(k) 
+                                       /* e.Description.ToLower().Contains(k)*/
+                                    ))
+                                    .ToList();                              
 //The controller tries to find relevant events by matching keywords from the user’s question to event names and locations.
 //If matches are found, it uses those; otherwise, it uses all events.
             var eventsToUse = relevantEvents.Any() ? relevantEvents : events;
@@ -69,8 +82,20 @@ namespace EventBookingPlatform.Controllers
                 TotalEvents = events.Count,
                 AllEventDetails = string.Join("\n", eventInfo)
             };
-            var answer = await _aiService.AskAboutEventWithRecommendationsAsync(prompt, eventsToUse);
-            return Ok(new { answer });
+            try
+                {
+                    var answer = await _aiService.AskAboutEventWithRecommendationsAsync(prompt, eventsToUse);
+
+                    return Ok(new { answer });
+                }
+                catch (Exception ex)
+                {
+                  
+                    Console.WriteLine($"AI error: {ex.Message}");
+
+                  
+                    return StatusCode(500, "AI is temporarily unavailable. Please try again in a moment.");
+                }
         }
 
 
