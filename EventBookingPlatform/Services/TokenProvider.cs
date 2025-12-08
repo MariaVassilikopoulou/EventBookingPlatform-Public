@@ -66,10 +66,10 @@ namespace EventBookingPlatform.Services
                 ValidateAudience = true,
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]!)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt-SecretKey"]!)),
                 ValidateLifetime = false, 
-                ValidIssuer = _configuration["Jwt:Issuer"],
-                ValidAudience = _configuration["Jwt:Audience"]
+                ValidIssuer = _configuration["Jwt-Issuer"],
+                ValidAudience = _configuration["Jwt-Audience"]
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

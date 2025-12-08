@@ -14,8 +14,9 @@ namespace EventBookingPlatform.Domain.Models
         public decimal Price { get; set; }
         public int TotalSeats { get; set; }
         public int AvailableSeats { get; set; }
+       
 
-        
+
         [JsonProperty("partitionKey")]
         public string PartitionKey => Id;
         public string ContainerName => "Events";
