@@ -28,10 +28,10 @@ steps:
 
 # Step 2: Install .NET SDK
 - task: UseDotNet@2
-  displayName: 'Install .NET Core SDK'
+  displayName: 'Install .NET SDK'
   inputs:
     packageType: 'sdk'
-    version: '8.x'
+    version: '10.x'
 
 # Step 3: Restore NuGet packages
 - script: dotnet restore $(solution)

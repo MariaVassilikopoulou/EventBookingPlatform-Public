@@ -1,12 +1,11 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using EventBookingPlatform.DTOs;
+using GoEventFunctionApp.Models;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 using SendGrid.Helpers.Mail;
 using SendGrid;
-using System.Text;
 using Azure.Messaging.ServiceBus;
 
 namespace GoEventFunctionApp.Functions
