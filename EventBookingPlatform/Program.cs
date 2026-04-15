@@ -9,6 +9,8 @@ using EventBookingPlatform.AzureServices;
 using Azure.Identity;
 using EventBookingPlatform.Services.AIServices;
 using EventBookingPlatform.Domain.Models;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,10 +71,27 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddIdentityAndJwtAuth(builder.Configuration);
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddSlidingWindowLimiter("auth", o =>
+    {
+        o.PermitLimit = 5;
+        o.Window = TimeSpan.FromMinutes(1);
+        o.SegmentsPerWindow = 2;
+        o.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        o.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = 429;
+});
+
+builder.Services.AddProblemDetails();
+
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+app.UseExceptionHandler();
+
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -83,6 +102,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

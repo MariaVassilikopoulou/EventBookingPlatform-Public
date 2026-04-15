@@ -3,6 +3,7 @@ using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Configuration;
 
 namespace EventBookingPlatform.Controllers
@@ -26,6 +27,7 @@ namespace EventBookingPlatform.Controllers
             _configuration = configuration;
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -59,6 +61,7 @@ namespace EventBookingPlatform.Controllers
             return BadRequest(result.Errors.Select(e => e.Description).ToList());
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponseDto))]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

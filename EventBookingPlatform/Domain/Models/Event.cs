@@ -17,6 +17,9 @@ namespace EventBookingPlatform.Domain.Models
        
 
 
+        [JsonProperty("_etag")]
+        public string? ETag { get; set; }
+
         [JsonProperty("partitionKey")]
         public string PartitionKey => Id;
         public string ContainerName => "Events";

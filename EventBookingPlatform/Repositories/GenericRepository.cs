@@ -61,11 +61,16 @@ namespace EventBookingPlatform.Repositories
                 throw;
             }
         }
-        public async Task<T> UpdateAsync(T entity, string partitionKey)
+        public async Task<T> UpdateAsync(T entity, string partitionKey, string? etag = null)
         {
             try
             {
-                var response = await _container.ReplaceItemAsync(entity, entity.Id, new PartitionKey(partitionKey));
+                var options = etag != null
+                    ? new ItemRequestOptions { IfMatchEtag = etag }
+                    : null;
+
+                var response = await _container.ReplaceItemAsync(
+                    entity, entity.Id, new PartitionKey(partitionKey), options);
 
                 return response.Resource;
             }

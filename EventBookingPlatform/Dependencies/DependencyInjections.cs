@@ -19,9 +19,10 @@ namespace EventBookingPlatform.Dependencies
 
             services.AddIdentityCore<User>(options =>
             {
-                options.Password.RequireDigit = false;
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 8;
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>() 

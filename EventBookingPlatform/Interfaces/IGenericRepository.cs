@@ -7,7 +7,7 @@ namespace EventBookingPlatform.Interfaces
         Task<T?> GetByIdAsync(string id, string partitionKey);
         Task<IEnumerable<T>> GetAllAsync();
         Task<T> AddAsync(T entity);
-        Task<T> UpdateAsync(T entity, string partitionKey);
+        Task<T> UpdateAsync(T entity, string partitionKey, string? etag = null);
         Task<bool> DeleteAsync(string id, string partitionKey);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? partitionKey = null);
 

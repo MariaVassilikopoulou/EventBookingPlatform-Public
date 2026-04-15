@@ -55,7 +55,10 @@ namespace EventBookingPlatform.Controllers
             [HttpGet]
             public async Task<IActionResult> GetAll()
             {
-                var booking = await _bookingService.GetAllBookingsAsync();
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+                var booking = await _bookingService.GetBookingsByUserAsync(userId);
                 return Ok(booking);
             }
 

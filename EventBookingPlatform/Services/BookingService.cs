@@ -3,6 +3,8 @@ using EventBookingPlatform.AzureServices;
 using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
+using Microsoft.Azure.Cosmos;
+using System.Net;
 
 namespace EventBookingPlatform.Services
 {
@@ -31,8 +33,17 @@ namespace EventBookingPlatform.Services
                 return (false, "Number of seats must be greater than zero", null);
             if (bookingDto.Seats > ev.AvailableSeats)
                     return(false, $"Only {ev.AvailableSeats} additional seats are availiable", null);
+            var eTag = ev.ETag;
             ev.AvailableSeats -= bookingDto.Seats;
-            await _eventRepository.UpdateAsync(ev, ev.PartitionKey);
+
+            try
+            {
+                await _eventRepository.UpdateAsync(ev, ev.PartitionKey, eTag);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.PreconditionFailed)
+            {
+                return (false, "Seats are no longer available. Please refresh and try again.", null);
+            }
 
             var booking = _mapper.Map<Booking>(bookingDto);
             booking.UserId= userId;
@@ -104,10 +115,21 @@ namespace EventBookingPlatform.Services
 
        public async Task<(bool success, string message)> DeleteBookingAsync(string eventId, string bookingId)
        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId, eventId);
+            if (booking == null)
+                return (false, "Booking not found");
+
+            var ev = await _eventRepository.GetByIdAsync(eventId, eventId);
+            if (ev != null)
+            {
+                ev.AvailableSeats += booking.Seats;
+                await _eventRepository.UpdateAsync(ev, ev.PartitionKey);
+            }
+
             var success = await _bookingRepository.DeleteAsync(bookingId, eventId);
             return success
                 ? (true, "Deleted successfully")
-                : (false, "Booking not found");
+                : (false, "Failed to delete booking");
        }
 
 
