@@ -142,6 +142,20 @@ namespace EventBookingPlatform.Repositories
         }
 
 
+        public async Task<IEnumerable<T>> QueryAsync(QueryDefinition queryDefinition)
+        {
+            using var feedIterator = _container.GetItemQueryIterator<T>(queryDefinition);
+            var results = new List<T>();
+
+            while (feedIterator.HasMoreResults)
+            {
+                var response = await feedIterator.ReadNextAsync();
+                results.AddRange(response.Resource);
+            }
+
+            return results;
+        }
+
         public async Task<T> UpsertAsync(T entity)
         {
             try

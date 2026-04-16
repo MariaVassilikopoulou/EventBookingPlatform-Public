@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Microsoft.Azure.Cosmos;
+using System.Linq.Expressions;
 
 namespace EventBookingPlatform.Interfaces
 {
@@ -10,8 +11,8 @@ namespace EventBookingPlatform.Interfaces
         Task<T> UpdateAsync(T entity, string partitionKey, string? etag = null);
         Task<bool> DeleteAsync(string id, string partitionKey);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? partitionKey = null);
-
+        Task<IEnumerable<T>> QueryAsync(QueryDefinition queryDefinition);
         Task<T> UpsertAsync(T entity);
-     
+
     }
 }

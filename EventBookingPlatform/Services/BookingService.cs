@@ -151,7 +151,9 @@ namespace EventBookingPlatform.Services
 
         public async Task<IEnumerable<Booking>> GetBookingsByUserAsync(string userId)
         {
-            return await _bookingRepository.FindAsync(b => b.UserId == userId, null);
+            var query = new QueryDefinition("SELECT * FROM c WHERE c.UserId = @userId")
+                .WithParameter("@userId", userId);
+            return await _bookingRepository.QueryAsync(query);
         }
 
 

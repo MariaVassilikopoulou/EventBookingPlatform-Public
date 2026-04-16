@@ -11,6 +11,7 @@ namespace EventBookingPlatform.Domain.Models
         public string UserName { get; set; }
         public string UserEmail { get; set; }
         public string EventId { get; set; }
+        public string EventName { get; set; } = string.Empty;
         public int Seats { get; set; }
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
 
