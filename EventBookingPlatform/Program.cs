@@ -69,7 +69,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy => policy
-            .WithOrigins("http://localhost:3000", "https://event-booking-frontend-public.vercel.app")
+            .WithOrigins(
+                "http://localhost:3000",
+                "https://event-booking-frontend-public.vercel.app",
+                "https://flowvent.online",
+                "https://www.flowvent.online")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
