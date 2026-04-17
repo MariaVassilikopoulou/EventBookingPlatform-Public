@@ -73,6 +73,11 @@ namespace EventBookingPlatform.Controllers
             }
 
 
+            [HttpGet("all")]
+            [Authorize(Roles = "Admin")]
+            public async Task<IActionResult> GetAllBookings()
+                => Ok(await _bookingService.GetAllBookingsAsync());
+
             [HttpGet("by-event/{eventId}")]
             public async Task<IActionResult> GetBookingsByEvent(string eventId)
             {

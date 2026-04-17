@@ -67,7 +67,7 @@ namespace EventBookingPlatform.Services
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt-SecretKey"]!)),
-                ValidateLifetime = false, 
+                ValidateLifetime = false,
                 ValidIssuer = _configuration["Jwt-Issuer"],
                 ValidAudience = _configuration["Jwt-Audience"]
             };

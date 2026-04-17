@@ -15,9 +15,9 @@ namespace EventBookingPlatform.AzureServices
             _queueName = config["ServiceBus:QueueName"];
         }
 
-        public async Task SendMessageAsync(object message)
+        public async Task SendMessageAsync(object message, string? queueName = null)
         {
-            var sender = _client.CreateSender(_queueName);
+            var sender = _client.CreateSender(queueName ?? _queueName);
             string json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
             await sender.SendMessageAsync(new ServiceBusMessage(body));

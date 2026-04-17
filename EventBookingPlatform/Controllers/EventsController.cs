@@ -38,7 +38,7 @@ namespace EventBookingPlatform.Controllers
             return Ok(ev);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEventDto dto)
         {
@@ -48,7 +48,7 @@ namespace EventBookingPlatform.Controllers
             return Created($"/api/events/{created.Id}", created);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -58,7 +58,7 @@ namespace EventBookingPlatform.Controllers
 
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateEventDto dto)
         {

@@ -14,6 +14,8 @@ namespace EventBookingPlatform.Domain.Models
         public string EventName { get; set; } = string.Empty;
         public int Seats { get; set; }
         public DateTime BookingDate { get; set; } = DateTime.UtcNow;
+        public string Status { get; set; } = "Pending"; // Pending | Paid | Cancelled
+        public string? StripeSessionId { get; set; }
 
         [JsonProperty("partitionKey")]
         public string PartitionKey => EventId;

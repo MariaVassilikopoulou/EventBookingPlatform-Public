@@ -156,6 +156,15 @@ namespace EventBookingPlatform.Services
             return await _bookingRepository.QueryAsync(query);
         }
 
+        public async Task<Booking?> UpdateBookingStatusAsync(string bookingId, string eventId, string status, string? stripeSessionId = null)
+        {
+            var booking = await _bookingRepository.GetByIdAsync(bookingId, eventId);
+            if (booking == null) return null;
+            booking.Status = status;
+            if (stripeSessionId != null) booking.StripeSessionId = stripeSessionId;
+            await _bookingRepository.UpdateAsync(booking, booking.PartitionKey);
+            return booking;
+        }
 
 
     }

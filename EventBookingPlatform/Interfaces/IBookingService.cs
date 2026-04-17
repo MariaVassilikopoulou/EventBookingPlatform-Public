@@ -13,5 +13,6 @@ namespace EventBookingPlatform.Interfaces
         Task<Booking?> GetBookingByIdAsync( string id, string eventId);
         Task<IEnumerable<Booking>> GetBookingsByEventAsync(string eventId);
         Task<IEnumerable<Booking>> GetBookingsByUserAsync(string userId);
+        Task<Booking?> UpdateBookingStatusAsync(string bookingId, string eventId, string status, string? stripeSessionId = null);
     }
 }

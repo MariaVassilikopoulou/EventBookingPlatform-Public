@@ -18,6 +18,12 @@ var keyVaultName = "KeyVault-GoEvent";
 var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
 builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
 
+// Re-add user secrets after Key Vault so local dev values take precedence over Key Vault
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
+}
+
 string accountEndpoint = builder.Configuration["CosmosDb-AccountEndpoint"];
 string accountKey = builder.Configuration["CosmosDb-AccountKey"];
 string databaseName = builder.Configuration["CosmosDb-DatabaseName"];
@@ -97,11 +103,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventBookingPlatform API V1");
-        c.RoutePrefix = app.Environment.IsDevelopment() ? "swagger" : string.Empty;
+        c.RoutePrefix = string.Empty;
     });
 }
+else
+{
+
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventBookingPlatform API V1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+
 app.UseCors("AllowFrontend");
-app.UseHttpsRedirection();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

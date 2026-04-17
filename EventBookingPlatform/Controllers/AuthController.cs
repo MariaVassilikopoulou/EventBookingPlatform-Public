@@ -77,6 +77,14 @@ namespace EventBookingPlatform.Controllers
 
             if (result.Succeeded)
             {
+                var initialAdminEmail = _configuration["Admin:InitialAdminEmail"];
+                if (!user.IsAdmin &&
+                    !string.IsNullOrEmpty(initialAdminEmail) &&
+                    user.Email!.Equals(initialAdminEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    user.IsAdmin = true;
+                    await _userManager.UpdateAsync(user);
+                }
                 return await GenerateAuthTokenResponse(user);
             }
 
