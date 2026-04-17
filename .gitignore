@@ -49,3 +49,4 @@ build/
 
 # Mac OS
 .DS_Store
+EventBookingPlatform/appsettings.Development.json
