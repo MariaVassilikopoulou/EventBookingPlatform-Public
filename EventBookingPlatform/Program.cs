@@ -65,6 +65,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGenWithAuth();
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddScoped<AIAssistantService>();
+builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",

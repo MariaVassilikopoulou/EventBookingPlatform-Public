@@ -4,6 +4,7 @@ using EventBookingPlatform.Domain.Models;
 using EventBookingPlatform.DTOs;
 using EventBookingPlatform.Interfaces;
 using EventBookingPlatform.Repositories;
+using EventBookingPlatform.Services.AIServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,16 +12,18 @@ namespace EventBookingPlatform.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    
+
     public class EventsController : ControllerBase
     {
         private readonly IGenericRepository<Event> _repository;
         private readonly IMapper _mapper;
-        public EventsController(IGenericRepository<Event> repository, IMapper mapper)
+        private readonly EmbeddingService _embeddingService;
+
+        public EventsController(IGenericRepository<Event> repository, IMapper mapper, EmbeddingService embeddingService)
         {
             _repository = repository;
             _mapper = mapper;
-
+            _embeddingService = embeddingService;
         }
 
 
@@ -42,9 +45,9 @@ namespace EventBookingPlatform.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEventDto dto)
         {
-            var ev= _mapper.Map<Event>(dto);
+            var ev = _mapper.Map<Event>(dto);
+            ev.Embedding = await _embeddingService.GenerateEmbeddingAsync(EmbeddingService.BuildEventText(ev));
             var created = await _repository.AddAsync(ev);
-
             return Created($"/api/events/{created.Id}", created);
         }
 
@@ -66,6 +69,7 @@ namespace EventBookingPlatform.Controllers
             if (existing == null) return NotFound();
 
             _mapper.Map(dto, existing);
+            existing.Embedding = await _embeddingService.GenerateEmbeddingAsync(EmbeddingService.BuildEventText(existing));
 
             var updated = await _repository.UpdateAsync(existing, existing.PartitionKey);
             return Ok(updated);

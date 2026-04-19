@@ -9,6 +9,8 @@ namespace EventBookingPlatform.Domain.Models
         [JsonProperty("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
+        public string? Description { get; set; }
+        public float[]? Embedding { get; set; }
         public DateTime Date { get; set; }
         public string Location { get; set; }
         public decimal Price { get; set; }

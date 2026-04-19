@@ -7,6 +7,8 @@ namespace EventBookingPlatform.DTOs
         [Required, MinLength(2)]
         public string Name { get; set; }
 
+        public string? Description { get; set; }
+
         [Required]
         public DateTime Date { get; set; }
 
