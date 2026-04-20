@@ -64,7 +64,8 @@ namespace GoEventFunctionApp.Functions
 
         private async Task SendEmailAsync(BookingEmailDto booking, string connectionString)
         {
-            var fromAddress = _config["EmailFrom"] ?? "DoNotReply@da3fab03-eb81-44bd-9169-cc0b07c716fc.azurecomm.net";
+            var fromEmail = _config["EmailFrom"] ?? "DoNotReply@da3fab03-eb81-44bd-9169-cc0b07c716fc.azurecomm.net";
+            var fromAddress = $"Flowvent <{fromEmail}>";
 
             var plainText = $@"Hi {booking.UserName},
 
